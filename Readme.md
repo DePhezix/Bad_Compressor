@@ -1,7 +1,7 @@
 # Compression & Decompression Tool
 
 This project is a console-based file **compression** and **decompression** tool created for my Computer Science semester project.  
-It supports multiple compression algorithms and optional password-based encryption.
+It supports multiple compression algorithms and optional password-based obfuscation.
 
 ---
 
@@ -13,10 +13,10 @@ It supports multiple compression algorithms and optional password-based encrypti
     - Bad LZSS
     - LZSS (to be implemented)
     - Huffman + LZSS (to be implemented)
-- **Optional Encryption** for compressed output
+- **Optional Obfuscation** for compressed output
 - **Automatic File Type Detection** during decompression
 - **Binary compression output:** `compressed.bin`
-- **Text decompression output:** `decompressed.txt`
+- **Universal decompression output:** `decompressed`
 
 ---
 
@@ -109,4 +109,4 @@ Enter the password used during compression. Failure to provide the correct passw
 
 ### 4. Output
 Decompressed text is written to:
-````decompressed.[original file extension```` or ````decompressed.txt```` if it failed decompression.
+````decompressed.[original file extension]```` or ````decompressed.txt```` if it failed decompression.
