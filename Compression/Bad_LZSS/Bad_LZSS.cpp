@@ -1,5 +1,6 @@
 #include "Bad_LZSS.h"
 #include <cstdint>
+#include <iostream>
 #include <sstream>
 #include <variant>
 #include <vector>
@@ -9,7 +10,7 @@ using LZ77type = tuple<unsigned long long, unsigned long long, unsigned char>;
 using LZSStype = tuple<unsigned long long, unsigned long long>;
 using LZSSCompleteType = variant<LZ77type, LZSStype>;
 
-void writeFile(string& fileExtension, ofstream& out, vector<LZSSCompleteType>& results, int SearchBufferSize, int LookAheadBufferSize) {
+void writeFile(string& fileExtension, ofstream& out, vector<LZSSCompleteType>& results) {
     unsigned char version = 0x03;
     out.write(reinterpret_cast<char*>(&version), 1);
 
@@ -17,10 +18,6 @@ void writeFile(string& fileExtension, ofstream& out, vector<LZSSCompleteType>& r
     out.write(reinterpret_cast<char*>(&fileExtensionSize), 1);
     out.write(fileExtension.data(), fileExtensionSize);
 
-    SearchBufferSize = static_cast<uint16_t>(SearchBufferSize);
-    out.write(reinterpret_cast<char*>(&SearchBufferSize), 2);
-
-    ostringstream buffer(ios::binary);
     for (size_t i = 0; i < results.size(); i += 8) {
         uint8_t flagByte = 0;
 
@@ -29,28 +26,22 @@ void writeFile(string& fileExtension, ofstream& out, vector<LZSSCompleteType>& r
                 flagByte |= (1 << (7 - j));
             }
         }
-        buffer.put(flagByte);
+        out.put(flagByte);
 
         for (size_t j = 0; j < 8 && i + j < results.size(); j++) {
             if (holds_alternative<LZ77type>(results[i + j])) {
                 auto& lz77 = get<LZ77type>(results[i + j]);
                 unsigned char val3 = get<2>(lz77);
-                buffer.write(reinterpret_cast<char*>(&val3), 1);
+                out.write(reinterpret_cast<char*>(&val3), 1);
             } else {
                 auto& [offset, length] = get<LZSStype>(results[i+j]);
                 uint16_t packed = offset;
                 uint8_t packed2 = length;
-                buffer.write(reinterpret_cast<char*>(&packed), 2);
-                buffer.write(reinterpret_cast<char*>(&packed2), 1);
+                out.write(reinterpret_cast<char*>(&packed), 2);
+                out.write(reinterpret_cast<char*>(&packed2), 1);
             }
         }
     }
-
-    string serializedData = buffer.str();
-    uint16_t serializedDataSize = static_cast<uint16_t>(serializedData.size());
-
-    out.write(reinterpret_cast<char*>(&serializedDataSize), sizeof(serializedDataSize));
-    out.write(serializedData.data(), serializedDataSize);
 }
 
 LZSStype SearchBuffer(string& fileHistory, string& bytesForSearch) {
@@ -91,12 +82,14 @@ LZSSCompleteType LookAheadBuffer(const string& aheadSubStr, string& searchBuffer
         previous = searchResult;
     }
 
-    if (toSearch.size() == 1) {
+    int offset = get<0>(previous);
+    int length = get<1>(previous);
+    if (toSearch.size() == 1 || length <= 3) {
         LZ77type result = {0,0, aheadSubStr[0]};
         return result;
     }
 
-    LZSStype result = {get<0>(previous), get<1>(previous)};
+    LZSStype result = {offset, length};
     return result;
 }
 
@@ -106,6 +99,7 @@ void Bad_LZSS(string& fileExtension, ofstream& out, string& fileData, int search
     for (int i = 0; i < fileData.size(); i++) {
         string aheadSubStr = fileData.substr(i, lookAheadBufferSize);
         auto result = LookAheadBuffer(aheadSubStr, inSearchBuffer);
+
         results.push_back(result);
 
         unsigned long long length = 0;
@@ -132,5 +126,7 @@ void Bad_LZSS(string& fileExtension, ofstream& out, string& fileData, int search
         }
     }
 
-    writeFile(fileExtension, out, results, searchBufferSize, lookAheadBufferSize);
+    // printResults(results);
+
+    writeFile(fileExtension, out, results);
 }

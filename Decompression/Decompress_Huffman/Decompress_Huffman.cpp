@@ -1,4 +1,6 @@
 #include "Decompress_Huffman.h"
+#include "../Decompress_Universal/Decompress_Universal.h"
+
 #include <cstdint>
 #include <fstream>
 #include <iostream>
@@ -21,26 +23,6 @@ struct Node {
     Node(Node* l, Node* r) : character(nullopt), isLeaf(false), left(l), right(r) {}
 };
 uint16_t treeIndex = 0;
-
-
-vector<uint8_t> readBytes(ifstream& inFile, size_t numBytes, unsigned char mask = 0x00) {
-    if (numBytes == 0) return {};
-
-    vector<uint8_t> buffer(numBytes);
-    inFile.read(reinterpret_cast<char*>(buffer.data()), numBytes);
-
-    if (mask != 0x00) {
-        for (int i = 0; i < numBytes; i++) {
-            buffer[i] ^= mask;
-        }
-    }
-
-    if (inFile.gcount() != static_cast<streamsize>(numBytes)) {
-        cerr << "Error: Failed to read " << numBytes << " bytes from file. Read " << inFile.gcount() << " bytes instead." << endl;
-        return {};
-    }
-    return buffer;
-}
 
 
 Node* rebuildTree(vector<uint8_t>& treeBytes) {

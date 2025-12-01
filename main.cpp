@@ -11,6 +11,7 @@
 #include "Compression/Huffman/Huffman.h"
 
 #include "Decompression/Decompress_Huffman/Decompress_Huffman.h"
+#include "Decompression/Decompress_LZSS/Decompress_LZSS.h"
 using namespace std;
 
 int main() {
@@ -115,9 +116,11 @@ int main() {
                     getline(cin, password);
                 }
                 ifstream originalFile(filePath, ios::binary);
-                ofstream out("decompressed.txt");
-
-                DecompressHuffman(originalFile, password);
+                DecompressHuffman(originalFile, password); break;
+            }
+            case 0x03: {
+                ifstream originalFile(filePath, ios::binary);
+                Decompress_LZSS(originalFile); break;
             }
             default:
                 cerr << "Invalid File Type!" << endl;
