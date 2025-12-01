@@ -38,7 +38,7 @@ void Decompress_LZSS(ifstream& file) {
             continue;
         }
 
-        if (indicators[indexByFlag] == 0) {
+        if (indicators[indexByFlag] == 1) {
             decodedData.push_back(static_cast<char>(dataVector[i]));
         } else {
             uint16_t offset = dataVector[i] | (dataVector[i+1] << 8);

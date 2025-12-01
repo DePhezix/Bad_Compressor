@@ -18,43 +18,49 @@ void writeFile(string& fileExtension, ofstream& out, vector<LZSSCompleteType>& r
     out.write(reinterpret_cast<char*>(&fileExtensionSize), 1);
     out.write(fileExtension.data(), fileExtensionSize);
 
+    vector<uint8_t> dataVec;
     for (size_t i = 0; i < results.size(); i += 8) {
         uint8_t flagByte = 0;
 
         for (size_t j = 0; j < 8 && i + j < results.size(); j++) {
             if (holds_alternative<LZ77type>(results[i + j])) {
-                flagByte |= (1 << (7 - j));
+                flagByte |= (1u << (7 - j));
             }
         }
-        out.put(flagByte);
+        dataVec.push_back(flagByte);
 
         for (size_t j = 0; j < 8 && i + j < results.size(); j++) {
             if (holds_alternative<LZ77type>(results[i + j])) {
                 auto& lz77 = get<LZ77type>(results[i + j]);
                 unsigned char val3 = get<2>(lz77);
-                out.write(reinterpret_cast<char*>(&val3), 1);
+                dataVec.push_back(static_cast<uint8_t>(val3));
             } else {
-                auto& [offset, length] = get<LZSStype>(results[i+j]);
-                uint16_t packed = offset;
-                uint8_t packed2 = length;
-                out.write(reinterpret_cast<char*>(&packed), 2);
-                out.write(reinterpret_cast<char*>(&packed2), 1);
+                auto [offset, length] = get<LZSStype>(results[i + j]);
+                uint16_t packed = static_cast<uint16_t>(offset);
+                dataVec.push_back(static_cast<uint8_t>(packed & 0xFF));
+                dataVec.push_back(static_cast<uint8_t>((packed >> 8) & 0xFF));
+                dataVec.push_back(static_cast<uint8_t>(length));
             }
         }
     }
+
+    uint32_t dataSize = static_cast<uint32_t>(dataVec.size());
+    out.write(reinterpret_cast<char*>(&dataSize), 4);
+    out.write(reinterpret_cast<const char*>(dataVec.data()), dataVec.size());
 }
 
 LZSStype SearchBuffer(string& fileHistory, string& bytesForSearch) {
     const int bytesLength = bytesForSearch.size();
     bool success = true;
     unsigned long long bytesRead = 0;
-    for (long long i = fileHistory.size(); i >= 0; i--) { // search through the fileHistory but from the last to first.
+    for (long long i = fileHistory.size() - 1; i >= 0; i--) { // search through the fileHistory but from the last to first.
         success = true;
         bytesRead = 0;
 
         for (long long y = 0; y < bytesLength; y++) {
             long long bufIndex = i + y;
 
+            if (bufIndex >= (long long)fileHistory.size()) { success = false; break; }
             if (fileHistory[bufIndex] != bytesForSearch[y]) {
                 success = false;
                 break;
