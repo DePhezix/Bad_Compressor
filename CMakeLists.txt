@@ -16,4 +16,6 @@ add_executable(Freshman_1stSemester_Project_Computer_Programming main.cpp
         Decompression/Decompress_LZSS/Decompress_LZSS.h
         Decompression/Decompress_LZSS/Decompress.LZSS.cpp
         Decompression/Decompress_Universal/Decompress_Universal.h
-        Decompression/Decompress_Universal/Decompress_Universal.cpp)
+        Decompression/Decompress_Universal/Decompress_Universal.cpp
+        Compression/LZSS/LZSS.cpp
+        Compression/LZSS/LZSS.h)

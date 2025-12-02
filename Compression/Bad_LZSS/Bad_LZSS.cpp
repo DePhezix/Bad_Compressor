@@ -60,8 +60,7 @@ LZSStype SearchBuffer(string& fileHistory, string& bytesForSearch) {
         for (long long y = 0; y < bytesLength; y++) {
             long long bufIndex = i + y;
 
-            if (bufIndex >= (long long)fileHistory.size()) { success = false; break; }
-            if (fileHistory[bufIndex] != bytesForSearch[y]) {
+            if (fileHistory[bufIndex] != bytesForSearch[y] || bufIndex >= (long long)fileHistory.size()) {
                 success = false;
                 break;
             }
