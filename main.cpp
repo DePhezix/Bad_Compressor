@@ -166,8 +166,6 @@ int main() {
 
                 ifstream secondFile("decompressed.bin", ios::binary);
                 DecompressHuffman(secondFile, password);
-
-                remove("decompressed.bin");
                 break;
             }
             case 0x06:
@@ -186,5 +184,6 @@ int main() {
         }
 
     }
+
     return 0;
 }

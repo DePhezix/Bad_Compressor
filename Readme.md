@@ -16,7 +16,7 @@ It supports multiple compression algorithms and optional password-based obfuscat
 - **Optional Obfuscation** for compressed output
 - **Automatic File Type Detection** during decompression
 - **Binary compression output:** `compressed.bin`
-- **Universal decompression output:** `decompressed`
+- **Adaptive decompression output:** `decompressed`
 
 ---
 
